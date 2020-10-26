@@ -118,11 +118,7 @@ void m_destruir(tMapeo *m, void (*fEliminarC)(void *), void (*fEliminarV)(void *
     free(*m);
 }
 
-/**
- Recupera el valor correspondiente a la entrada con clave C en M, si esta existe.
- Retorna el valor correspondiente, o NULL en caso contrario.
-**/
-extern tValor m_recuperar(tMapeo m, tClave c)
+tValor m_recuperar(tMapeo m, tClave c)
 {
     int encontre = 0,i;
     tValor v = NULL;
