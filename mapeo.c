@@ -4,6 +4,9 @@
 #include "mapeo.h"
 
 void reHash(tMapeo m);
+void fEliminarEntrada(void* entrada);
+void (*eliminarClave)(void *);
+void (*eliminarValor)(void *);
 
 void crear_mapeo(tMapeo *m, int ci, int (*fHash)(void *), int (*fComparacion)(void *, void *))
 {
@@ -77,6 +80,8 @@ void m_eliminar(tMapeo m, tClave c, void (*fEliminarC)(void *), void (*fEliminar
     int encontre = 0,i;
     tEntrada cursor;
     tLista bucket;
+    eliminarClave = fEliminarC;
+    eliminarValor = fEliminarV;
     int hash = (m->hash_code(c))%(m->longitud_tabla);
     bucket = *((m->tabla_hash)+hash);
     tPosicion pos = l_primera(bucket);
@@ -89,7 +94,7 @@ void m_eliminar(tMapeo m, tClave c, void (*fEliminarC)(void *), void (*fEliminar
             fEliminarV(cursor->valor);
             fEliminarC(cursor->clave);
             (m->cantidad_elementos)--;
-            l_eliminar(bucket,pos,&free);
+            l_eliminar(bucket,pos,&fEliminarEntrada);
         }
         else
         {
@@ -105,21 +110,24 @@ void m_destruir(tMapeo *m, void (*fEliminarC)(void *), void (*fEliminarV)(void *
     tLista bucket;
     int i;
     tPosicion pos;
+    eliminarClave = fEliminarC;
+    eliminarValor = fEliminarV;
     for(i = 0; i<((*m)->longitud_tabla); i++)
     {
         bucket = *(((*m)->tabla_hash)+i);
-        while(l_longitud(bucket) != 0)
+        while(l_longitud(bucket))
         {
             pos = l_primera(bucket);
             cursor = l_recuperar(bucket,pos);
             fEliminarC(cursor->clave);
             fEliminarV(cursor->valor);
-            l_eliminar(bucket,pos,&free);
+            l_eliminar(bucket,pos,&fEliminarEntrada);
         }
-        l_destruir(&bucket,&free);
+        l_destruir(&bucket,&fEliminarEntrada);
     }
     free(((*m)->tabla_hash));
     free(*m);
+    *m = NULL;
 }
 
 tValor m_recuperar(tMapeo m, tClave c)
@@ -178,4 +186,12 @@ void reHash(tMapeo m)
     }
     free(m->tabla_hash);
     m->tabla_hash=nuevo_hash;
+}
+
+void fEliminarEntrada(void* entrada)
+{
+    tEntrada ent = (tEntrada) entrada;
+    eliminarClave(ent->clave);
+    eliminarValor(ent->valor);
+    free(ent);
 }

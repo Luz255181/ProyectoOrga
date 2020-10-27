@@ -2,14 +2,11 @@
 #include <stdlib.h>
 
 #include "lista.h"
-int *size;
 void crear_lista(tLista *l)
 {
     *l = (tLista)malloc(sizeof(struct celda));
-    size = (int *)malloc(sizeof(int));
-    if (*l == NULL || size == NULL)
+    if (*l == NULL)
         exit(LST_ERROR_MEMORIA);
-    *size = 0;
     (*l)->elemento = NULL;
     (*l)->siguiente = NULL;
 }
@@ -17,40 +14,45 @@ void crear_lista(tLista *l)
 void l_insertar(tLista l, tPosicion p, tElemento e)
 {
     if (p == NULL)
+    {
         exit(LST_POSICION_INVALIDA);
+    }
     tPosicion nueva = (tPosicion)malloc(sizeof(struct celda));
     if (nueva == NULL)
         exit(LST_ERROR_MEMORIA);
     nueva->elemento = e;
     nueva->siguiente = p->siguiente;
     p->siguiente = nueva;
-    (*size)++;
 }
 
 void l_eliminar(tLista l, tPosicion p, void (*fEliminar)(tElemento))
 {
     if (p->siguiente == NULL) //p es fin(L)
+    {
+        printf("error en eliminar lista");
         exit(LST_POSICION_INVALIDA);
+    }
     tPosicion elim = p->siguiente;
     p->siguiente = elim->siguiente;
     tElemento e = elim->elemento;
     fEliminar(e);
     free(elim);
-    (*size)--;
 }
 
 void l_destruir(tLista *l, void (*fEliminar)(tElemento))
 {
     while ((*l)->siguiente != NULL)
         l_eliminar(*l, *l, fEliminar);
-    free(size);
     free(*l);
+    *l=NULL;
 }
 
 tElemento l_recuperar(tLista l, tPosicion p)
 {
     if (p->siguiente == NULL) //p es fin(L)
+    {
         exit(LST_POSICION_INVALIDA);
+    }
     return (p->siguiente)->elemento;
 }
 
@@ -79,7 +81,7 @@ tPosicion l_anterior(tLista l, tPosicion p)
 tPosicion l_ultima(tLista l)
 {
     tPosicion cursor = l;
-    if (*size == 0)
+    if (cursor->siguiente==NULL)
         return cursor;
     while (cursor->siguiente->siguiente != NULL)
         cursor = cursor->siguiente;
@@ -96,5 +98,11 @@ tPosicion l_fin(tLista l)
 
 int l_longitud(tLista l)
 {
-    return *size;
+    int i=0;
+    tPosicion cursor=l;
+    while(cursor->siguiente!=NULL){
+        i++;
+        cursor=cursor->siguiente;
+    }
+    return i;
 }
