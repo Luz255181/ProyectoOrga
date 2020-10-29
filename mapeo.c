@@ -138,32 +138,28 @@ void m_destruir(tMapeo *m, void (*fEliminarC)(void *), void (*fEliminarV)(void *
 
 tValor m_recuperar(tMapeo m, tClave c)
 {
-    int encontre = 0, i, l_long;
+    int encontre = 0, i, l_long, hash;
     tValor v = NULL;
     tEntrada cursor;
     tLista bucket;
     tPosicion pos;
-    int hash = (m->hash_code(c)) % (m->longitud_tabla);
+    hash = (m->hash_code(c)) % (m->longitud_tabla);
     bucket = *((m->tabla_hash) + hash);
     l_long = l_longitud(bucket);
-    if (l_long > 0)
+    for (i = 0; !encontre && i < l_long; i++)
     {
         pos = l_primera(bucket);
-        for (i = 0; !encontre && i < l_long; i++)
+        cursor = (tEntrada)l_recuperar(bucket, pos);
+        if (m->comparador(c, (cursor->clave)))
         {
-            cursor = (tEntrada)l_recuperar(bucket, pos);
-            if (m->comparador(c, (cursor->clave)))
-            {
-                encontre = !encontre;
-                v = cursor->valor;
-            }
-            else
-            {
-                pos = l_siguiente(bucket, pos);
-            }
+            encontre = !encontre;
+            v = cursor->valor;
+        }
+        else
+        {
+            pos = l_siguiente(bucket, pos);
         }
     }
-
     return v;
 }
 
@@ -178,6 +174,10 @@ void reHash(tMapeo m)
     tEntrada cursor;
     nuevaLong = (m->longitud_tabla) * 2;
     nuevo_hash = (tLista *)malloc(nuevaLong * sizeof(tLista));
+    if(nuevo_hash == NULL)
+    {
+        exit(MAP_ERROR_MEMORIA);
+    }
     for (i = 0; i < nuevaLong; i++)
     {
         crear_lista(nuevo_hash + i);
