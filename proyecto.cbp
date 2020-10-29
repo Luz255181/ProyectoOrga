@@ -32,7 +32,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="evalua.c">
+		<Unit filename="evaluador.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="lista.c">
