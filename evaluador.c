@@ -9,6 +9,7 @@
 #define EV_ERROR_ARCHIVO           -1
 #define EV_ERROR_INVOCACION        -2
 
+//declaración de funciones
 void contador(tMapeo map, FILE* file);
 int fComparacion(void *cadena1, void* cadena2);
 int fHash(void* string);
@@ -17,19 +18,25 @@ void fEliminarV(void* v);
 
 int main(int argc, char const *argv[])
 {
+    //declaracion de variables
     char *ruta,*aBuscar;
     int opcion,*cant;
     FILE * fp;
+    tMapeo map;
     cant = malloc(sizeof(int));
     ruta = malloc(sizeof(char)*50);
     aBuscar = malloc(sizeof(char)*50);
-    tMapeo map;
+
+    //control de memoria
     if(cant == NULL || ruta == NULL || aBuscar == NULL)
     {
         printf("Error de memoria");
         exit(EV_ERROR_INVOCACION);
     }
+
+    //control de parametros
     if(argc == 2){
+        //inicializar el archivo, el mapeo y el contador de palabras
         strcpy(ruta,argv[1]);
         fp = fopen(ruta,"r");
         if(fp==NULL){
@@ -43,6 +50,7 @@ int main(int argc, char const *argv[])
         exit(EV_ERROR_INVOCACION);
     }
 
+    //menu de opciones
     while (1){
 
         printf("**************************************************** \n Opciones: \n");
@@ -51,8 +59,7 @@ int main(int argc, char const *argv[])
         printf("Ingrese la opcion elegida: ");
         scanf("%d",&opcion);
         printf("\n");
-        //Limpia el buffer
-        fflush(stdin);
+        fflush(stdin);//Limpia el buffer
         if (opcion==1)
         {
             printf("ingrese la palabra a buscar:\n");
@@ -67,6 +74,7 @@ int main(int argc, char const *argv[])
         }
         else if (opcion==2)
         {
+            //libero memoria y finalizo con valor 0
             printf("Gracias por usar la aplicacion:\n");
             free(cant);
             free(aBuscar);
@@ -84,13 +92,18 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
+/**
+* Recorre el archivo e introduce cada palabra en el mapeo,
+* Si la palabra ya ese encuentra en el mapeo incrementa su valor en 1.
+* En caso contrario ingresa la nueva palabra en el mapeo con valor 1.
+*/
 void contador(tMapeo map,FILE *file)
 {
     char *palabra ;
     int* valor;
     while(!feof(file))
     {
-        palabra=malloc(sizeof(char)*50);
+        palabra=malloc(sizeof(char)*50);//reservo memoria para la palabra de max 49 char
         if(palabra == NULL)
         {
             printf("Error de memoria");
@@ -98,7 +111,7 @@ void contador(tMapeo map,FILE *file)
         }
         fscanf(file,"%s",palabra);
         valor = m_recuperar(map, palabra);
-        if(valor == NULL)
+        if(valor == NULL)//no se encuentra en el mapeo
         {
             valor = malloc(sizeof(int));
             if(valor == NULL)
@@ -109,7 +122,7 @@ void contador(tMapeo map,FILE *file)
             *valor = 1;
             m_insertar(map,palabra,valor);
         }
-        else
+        else//ya se encontraba en el mapeo
         {
             *valor=*valor+1;
             //libero memoria de palabra no usada
@@ -118,10 +131,13 @@ void contador(tMapeo map,FILE *file)
     }
 }
 
+/**
+* Calcula el valor de hash de cada cadena de caracteres sumando los valores ascii de cada caracter.
+*/
 int fHash(void* string)
 {
     char* str=(char*) string;
-    int hash = 24,i=1;
+    int hash = 0,i=1;
     char puntero= *str;
     while(puntero != '\0'){
         hash+=(int) puntero;
@@ -130,6 +146,11 @@ int fHash(void* string)
     }
     return hash;
 }
+
+/**
+* Compara 2 cadena de caracteres
+* retorna true en caso de ser iguales y false en caso contrario.
+*/
 int fComparacion(void *cadena1, void* cadena2)
 {
     char * a = (char*) cadena1;
@@ -141,10 +162,16 @@ int fComparacion(void *cadena1, void* cadena2)
     return toret;
 }
 
+/**
+*  Libera el espacio de memoria de la cadena de caracteres
+*/
 void fEliminarC(void* c){
     free(c);
 }
 
+/**
+*  Libera el espacio de memoria del entero.
+*/
 void fEliminarV(void * v){
     int *a=(int* )v;
     *a=0;

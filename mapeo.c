@@ -85,6 +85,7 @@ void m_eliminar(tMapeo m, tClave c, void (*fEliminarC)(void *), void (*fEliminar
     tLista bucket;
     tPosicion pos;
     hash = (m->hash_code(c)) % (m->longitud_tabla);
+    // guardo los punteros a las funciones para eliminar la entrada
     eliminarClave = fEliminarC;
     eliminarValor = fEliminarV;
     bucket = *((m->tabla_hash) + hash);
@@ -115,6 +116,7 @@ void m_destruir(tMapeo *m, void (*fEliminarC)(void *), void (*fEliminarV)(void *
     tLista bucket;
     int i, l_long, m_long;
     tPosicion pos;
+    // guardo los punteros a las funciones para eliminar la entrada
     eliminarClave = fEliminarC;
     eliminarValor = fEliminarV;
     m_long = (*m)->longitud_tabla;
@@ -165,8 +167,15 @@ tValor m_recuperar(tMapeo m, tClave c)
     return v;
 }
 
+/**
+* Funcion utilizada para no eliminar las entradas de la lista a la hora de hacer rehash
+*/
 void noEliminar(void *elem) {}
 
+/**
+* Crea una nueva tabla hash con el doble de capacidad de la que ya existia en el mapeo.
+* Ademas, reinserta todas las entradas existentes de la tabla anterior.
+*/
 void reHash(tMapeo m)
 {
     tLista *nuevo_hash;
@@ -174,16 +183,19 @@ void reHash(tMapeo m)
     int i, nuevaLong, hash,l_long;
     tPosicion pos;
     tEntrada cursor;
+    //nueva tabla hash
     nuevaLong = (m->longitud_tabla) * 2;
     nuevo_hash = (tLista *)malloc(nuevaLong * sizeof(tLista));
     if(nuevo_hash == NULL)
     {
         exit(MAP_ERROR_MEMORIA);
     }
+    //inicializo las listas de la nueva tabla
     for (i = 0; i < nuevaLong; i++)
     {
         crear_lista(nuevo_hash + i);
     }
+    //recorre la tabla antigua para insertar las entradas en la nueva tabla
     for (i = 0; i < (m->longitud_tabla); i++)
     {
         bucket = *((m->tabla_hash) + i);
@@ -192,18 +204,22 @@ void reHash(tMapeo m)
         {
             pos = l_primera(bucket);
             cursor = l_recuperar(bucket, pos);
-            hash = (m->hash_code(cursor->clave)) % (nuevaLong);
-            l_insertar((*(nuevo_hash + hash)), l_primera(*(nuevo_hash + hash)), cursor);
+            hash = (m->hash_code(cursor->clave)) % (nuevaLong);//posicion en la nueva tabla
+            l_insertar((*(nuevo_hash + hash)), l_primera(*(nuevo_hash + hash)), cursor);//insertar en lista de nueva tabla
             l_eliminar(bucket, pos, &noEliminar);
             l_long--;
         }
-        l_destruir(&bucket, &noEliminar);
+        l_destruir(&bucket, &noEliminar);//libera el espacio de memoria de la lista de la antigua tabla
     }
     free(m->tabla_hash);
+    //asigno la tabla nueva
     m->tabla_hash = nuevo_hash;
     m->longitud_tabla = nuevaLong;
 }
 
+/**
+* Elimina los datos de la entrada y libera el espacio e memoria de esta.
+*/
 void fEliminarEntrada(void *entrada)
 {
     tEntrada ent = (tEntrada)entrada;
