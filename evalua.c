@@ -12,11 +12,8 @@
 void contador(tMapeo map, FILE* file);
 int fComparacion(void *cadena1, void* cadena2);
 int fHash(void* string);
-
-void imprimir_clave(void* c){
-    char * s = (char *) c;
-    printf("%s\n",s);
-}
+void fEliminarC(void* c);
+void fEliminarV(void* v);
 
 int main(int argc, char const *argv[])
 {
@@ -27,7 +24,11 @@ int main(int argc, char const *argv[])
     ruta = malloc(sizeof(char)*50);
     aBuscar = malloc(sizeof(char)*50);
     tMapeo map;
-
+    if(cant == NULL || ruta == NULL || aBuscar == NULL)
+    {
+        printf("Error de memoria");
+        exit(EV_ERROR_INVOCACION);
+    }
     if(argc == 2){
         strcpy(ruta,argv[1]);
         fp = fopen(ruta,"r");
@@ -47,6 +48,7 @@ int main(int argc, char const *argv[])
         printf("1. Cantidad de apariciones de una palabra.\n");
         printf("2. Salir.\n");
         scanf("%d",&opcion);
+        //Limpia el buffer
         fflush(stdin);
         if (opcion==1)
         {
@@ -55,7 +57,7 @@ int main(int argc, char const *argv[])
             fflush(stdin);
             cant = (int*) m_recuperar(map,aBuscar);
             if(cant!=NULL)
-                printf("la cantidad de veces que aparece \" %s \" en el archivo es %d.\n",aBuscar,*cant);
+                printf("la cantidad de veces que aparece \" %s \" en el archivo es %d.\n\n",aBuscar,*cant);
             else{
                 printf("La palabra no se encontro.\n");
             }
@@ -65,7 +67,8 @@ int main(int argc, char const *argv[])
             printf("Gracias por usar la aplicacion:\n");
             free(cant);
             free(aBuscar);
-            //otros free y destroy;
+            free(ruta);
+            m_destruir(&map,&fEliminarC,&fEliminarV);
             fclose(fp);
             exit(SUCCESS);
         }
@@ -78,22 +81,36 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-void contador(tMapeo map,FILE *file){
+void contador(tMapeo map,FILE *file)
+{
     char *palabra ;
     int* valor;
-    while(!feof(file)){
+    while(!feof(file))
+    {
         palabra=malloc(sizeof(char)*50);
+        if(palabra == NULL)
+        {
+            printf("Error de memoria");
+            exit(EV_ERROR_INVOCACION);
+        }
         fscanf(file,"%s",palabra);
-        if(strcmp(palabra,"")>0){
-            valor = m_recuperar(map, palabra);
-            if(valor == NULL){
-                valor = malloc(sizeof(int));
-                *valor = 1;
-                m_insertar(map,palabra,valor);
-            }else{
-                *valor=*valor+1;
+        valor = m_recuperar(map, palabra);
+        if(valor == NULL)
+        {
+            valor = malloc(sizeof(int));
+            if(valor == NULL)
+            {
+                printf("Error de memoria");
+                exit(EV_ERROR_INVOCACION);
             }
-            valor = m_recuperar(map, palabra);
+            *valor = 1;
+            m_insertar(map,palabra,valor);
+        }
+        else
+        {
+            *valor=*valor+1;
+            //libero memoria de palabra no usada
+            free(palabra);
         }
     }
 }
@@ -119,4 +136,14 @@ int fComparacion(void *cadena1, void* cadena2)
         toret = !(strcmp(a,b));
     }
     return toret;
+}
+
+void fEliminarC(void* c){
+    free(c);
+}
+
+void fEliminarV(void * v){
+    int *a=(int* )v;
+    *a=0;
+    free(a);
 }
