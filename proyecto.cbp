@@ -11,6 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="hola.txt" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
@@ -31,13 +32,13 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="evalua.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="lista.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="lista.h" />
-		<Unit filename="main.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="mapeo.c">
 			<Option compilerVar="CC" />
 		</Unit>

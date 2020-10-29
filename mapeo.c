@@ -137,7 +137,7 @@ tValor m_recuperar(tMapeo m, tClave c)
     tValor v = NULL;
     tEntrada cursor;
     tLista bucket;
-    tPosicion pos,pfin;
+    tPosicion pos;
     int hash = (m->hash_code(c)) % (m->longitud_tabla);
     bucket = *((m->tabla_hash) + hash);
     l_long = l_longitud(bucket);
@@ -201,3 +201,4 @@ void fEliminarEntrada(void *entrada)
     eliminarValor(ent->valor);
     free(ent);
 }
+
