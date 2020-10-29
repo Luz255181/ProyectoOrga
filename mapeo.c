@@ -38,14 +38,14 @@ tValor m_insertar(tMapeo m, tClave c, tValor v)
     tEntrada cursor, nuevo;
     tLista bucket;
     tPosicion pos;
-    int i, longitud;
-    int encontre = 0;
-    int hash = (m->hash_code(c)) % (m->longitud_tabla);
+    int i, longitud, encontre, hash;
+    encontre = 0;
+    hash = (m->hash_code(c)) % (m->longitud_tabla);
     bucket = *((m->tabla_hash) + hash);
     longitud = l_longitud(bucket);
+    pos = l_primera(bucket);
     for (i = 0; !encontre && i < longitud; i++)
     {
-        pos = l_primera(bucket);
         cursor = (tEntrada)l_recuperar(bucket, pos);
         if (m->comparador(c, cursor->clave))
         {
@@ -80,18 +80,18 @@ tValor m_insertar(tMapeo m, tClave c, tValor v)
 
 void m_eliminar(tMapeo m, tClave c, void (*fEliminarC)(void *), void (*fEliminarV)(void *))
 {
-    int encontre = 0, i, longitud;
+    int encontre = 0, i, longitud, hash;
     tEntrada cursor;
     tLista bucket;
     tPosicion pos;
-    int hash = (m->hash_code(c)) % (m->longitud_tabla);
+    hash = (m->hash_code(c)) % (m->longitud_tabla);
     eliminarClave = fEliminarC;
     eliminarValor = fEliminarV;
     bucket = *((m->tabla_hash) + hash);
     longitud = l_longitud(bucket);
+    pos = l_primera(bucket);
     for (i = 0; !encontre && i < longitud; i++)
     {
-        pos = l_primera(bucket);
         cursor = (tEntrada)l_recuperar(bucket, pos);
         if (m->comparador(c, cursor->clave))
         {
@@ -113,21 +113,23 @@ void m_destruir(tMapeo *m, void (*fEliminarC)(void *), void (*fEliminarV)(void *
 {
     tEntrada cursor;
     tLista bucket;
-    int i, longitud;
+    int i, l_long, m_long;
     tPosicion pos;
     eliminarClave = fEliminarC;
     eliminarValor = fEliminarV;
-    for (i = 0; i < ((*m)->longitud_tabla); i++)
+    m_long = (*m)->longitud_tabla;
+    for (i = 0; i < m_long; i++)
     {
         bucket = *(((*m)->tabla_hash) + i);
-        longitud = l_longitud(bucket);
-        while (longitud)
+        l_long = l_longitud(bucket);
+        while (l_long)
         {
             pos = l_primera(bucket);
             cursor = l_recuperar(bucket, pos);
             fEliminarC(cursor->clave);
             fEliminarV(cursor->valor);
             l_eliminar(bucket, pos, &fEliminarEntrada);
+            l_long--;
         }
         l_destruir(&bucket, &fEliminarEntrada);
     }
@@ -146,9 +148,9 @@ tValor m_recuperar(tMapeo m, tClave c)
     hash = (m->hash_code(c)) % (m->longitud_tabla);
     bucket = *((m->tabla_hash) + hash);
     l_long = l_longitud(bucket);
+    pos = l_primera(bucket);
     for (i = 0; !encontre && i < l_long; i++)
     {
-        pos = l_primera(bucket);
         cursor = (tEntrada)l_recuperar(bucket, pos);
         if (m->comparador(c, (cursor->clave)))
         {
@@ -193,6 +195,7 @@ void reHash(tMapeo m)
             hash = (m->hash_code(cursor->clave)) % (nuevaLong);
             l_insertar((*(nuevo_hash + hash)), l_primera(*(nuevo_hash + hash)), cursor);
             l_eliminar(bucket, pos, &noEliminar);
+            l_long--;
         }
         l_destruir(&bucket, &noEliminar);
     }
