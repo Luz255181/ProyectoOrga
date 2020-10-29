@@ -201,6 +201,7 @@ void reHash(tMapeo m)
     }
     free(m->tabla_hash);
     m->tabla_hash = nuevo_hash;
+    m->longitud_tabla = nuevaLong;
 }
 
 void fEliminarEntrada(void *entrada)
